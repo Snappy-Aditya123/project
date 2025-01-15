@@ -34,7 +34,7 @@ def extract_job_links(soup):
 # Extract detailed job information
 def extract_job_details(job_url):
     payload = {
-        'api_key': '0cf23b94df3ab834e2440af257cdf7ee',
+        'api_key': '',
         'url': job_url,
         'device_type': 'desktop',
         'max_cost': '100',
@@ -94,7 +94,7 @@ def extract_job_details(job_url):
 # Main function to orchestrate scraping
 def main():
     payload = {
-        'api_key': '0cf23b94df3ab834e2440af257cdf7ee',
+        'api_key': '',
         'url': url,
         'device_type': 'desktop',
         'max_cost': '100',
