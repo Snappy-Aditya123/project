@@ -82,4 +82,4 @@ Feel free to check out the repository, and if you have any suggestions or tips, 
 ---
 
 ## **Contact Me**
-If you have any questions or just want to say hi, you can reach me at [your email] or connect with me on [LinkedIn link].
+If you have any questions or just want to say hi, you can reach me at as0118d@gre.ac.uk or connect with me on https://www.linkedin.com/in/aditya-reddy-sathi-649266291/.
