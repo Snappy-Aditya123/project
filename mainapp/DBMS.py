@@ -109,7 +109,7 @@ class ChatDatabase:
         """
         self.connection.close()
 
-import sqlite3
+
 
 class JobInfoDB:
     def __init__(self, db_name="job_info.db"):
