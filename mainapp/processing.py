@@ -36,7 +36,7 @@ class APIS:
             "distanceFromLocation": distance,
             "minimumSalary": min_salary,
             "maximumSalary": max_salary,
-            "resultsToTake": 100,
+            "resultsToTake": 20,
             "resultsToSkip": (page - 1) * 100
         }
         try:
@@ -165,7 +165,38 @@ class APIS:
         except requests.exceptions.RequestException as e:
             print(f"Error fetching article content from {url}: {e}")
             return "Failed to retrieve content."
-    import requests
+    def get_guardian_articles_with_content(self, keyword):
+        api_key = self.KEYS['Guardian_API']  # Replace with your API key
+        base_url = "https://content.guardianapis.com/search"
+        params = {
+        "q": keyword,
+        "page-size": 3,
+        "order-by": "newest",
+        "api-key": api_key,
+        "show-fields": "webTitle,webUrl,webPublicationDate,body"
+        }
+
+        try:
+            response = requests.get(base_url, params=params)
+            response.raise_for_status()  # Raise error for bad status
+            data = response.json()
+
+            if data["response"]["status"] == "ok" and data["response"]["total"] > 0:
+                articles = data["response"]["results"]
+                for i, article in enumerate(articles, 1):
+                    print(f"Article {i}:")
+                    print(f"Title: {article['webTitle']}")
+                    print(f"Published: {article['webPublicationDate']}")
+                    print(f"URL: {article['webUrl']}")
+                    print(f"Content: {article['fields'].get('body', 'No content available')}...")  # Print first 500 chars
+                    print("\n")
+                return data
+            else:
+                print("No relevant articles found.")
+
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+
 
 class RSSFetcher:
     def __init__(self):
@@ -207,21 +238,21 @@ class RSSFetcher:
             return []
 
 # Example usage
-if __name__ == "__main__":
-    fetcher = RSSFetcher()
+# if __name__ == "__main__":
+#     fetcher = RSSFetcher()
 
-    for feed_url in fetcher.RSS_FEEDS:
-        print(f"Fetching articles from: {feed_url}")
-        articles = fetcher.fetch_rss_articles(feed_url)
+#     for feed_url in fetcher.RSS_FEEDS:
+#         print(f"Fetching articles from: {feed_url}")
+#         articles = fetcher.fetch_rss_articles(feed_url)
 
-        if articles:
-            print("Articles retrieved:")
-            for article in articles[:5]:  # Limit to 5 articles per feed for display
-                print(f"- Title: {article['title']}")
-                print(f"  Link: {article['link']}")
-                print(f"  Description: {article['description'][:200]}...")
-                print(f"  Published: {article['pub_date']}")
-                print()
+#         if articles:
+#             print("Articles retrieved:")
+#             for article in articles[:5]:  # Limit to 5 articles per feed for display
+#                 print(f"- Title: {article['title']}")
+#                 print(f"  Link: {article['link']}")
+#                 print(f"  Description: {article['description'][:200]}...")
+#                 print(f"  Published: {article['pub_date']}")
+#                 print()
 
 # Example usage
 
@@ -265,16 +296,5 @@ if __name__ == "__main__":
 #     if filtered_data:
 #         print("Filtered ONS Dataset:", filtered_data)
 
-
-
-# if __name__ == "__main__":
-#     api = APIS()
-
-#     # Fetch news articles related to "Software Engineer"
-#     news_articles = api.get_job_related_news(keywords="Software Engineer", limit=3)
-#     if news_articles:
-#         print("News articles with full content:")
-#         for article in news_articles:
-#             print(f"Title: {article['title']}")
-#             print(f"URL: {article['url']}")
-#             print(f"Content: {article['content'][:500]}...")  # Print a snippet of the content
+api = APIS()
+api.get_guardian_articles_with_content("Software Engineer")
