@@ -62,40 +62,47 @@ class APIS:
             print(f"Error fetching job details: {e}")
             return None
 
-    def get_job_related_news(self, keywords, limit=10):
-        """
-        Fetch articles from the News API and extract full content from the linked URLs.
-        
-        :param keywords: Keywords related to the job (e.g., "Software Engineer").
-        :param limit: Number of articles to retrieve (default is 10).
-        :return: List of dictionaries with titles, links, and full content.
-        """
-        endpoint = f"{self.NEWS_BASE_URL}/all"
-        params = {
-            "api_token": self.NEWS_API_KEY,
-            "search": keywords,
-            "language": "en",
-            "limit": limit
-        }
-        try:
-            response = requests.get(endpoint, params=params)
-            response.raise_for_status()
-            articles = response.json().get("data", [])
+    import requests
 
-            enriched_articles = []
-            for article in articles:
-                article_url = article.get("url")
-                if article_url:
-                    full_content = self._extract_article_content(article_url)
-                    enriched_articles.append({
-                        "title": article.get("title"),
-                        "url": article_url,
-                        "content": full_content
-                    })
-            return enriched_articles
+    def get_news_api_article(self, endpoint="latest-news", query_params=None):
+        """
+        Fetches articles from the Currents News API.
+
+    Args:
+        api_key (str): Your API key for the Currents News API.
+        endpoint (str): API endpoint to use ("latest-news" or "search").
+        query_params (dict, optional): Query parameters for the API request (e.g., filters).
+
+    Returns:
+        dict: A JSON response containing news articles or an error message.
+    """
+        base_url = "https://api.currentsapi.services/v1/"
+        url = f"{base_url}{endpoint}"
+
+    # Set up headers and default query parameters
+        headers = {
+            "Authorization": "pb5_wizU2aBbFT6zJvxNemWBBkHXyDfd3XJnsAxZJnnqlYYB"
+    }
+
+
+
+        try:
+        # Make the API request
+            response = requests.get(url, headers=headers, params=query_params)
+            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+    
+        # Parse the JSON response
+            data = response.json()
+            if data.get('status') == 'ok':
+                articles = data.get('news', [])
+                descriptions = [article['description'] for article in articles if 'description' in article]
+                return descriptions
+            else:
+                return {"error": "Invalid API response or no articles available."}
+
         except requests.exceptions.RequestException as e:
-            print(f"Error fetching job-related news: {e}")
-            return []
+            return {"error": "Failed to fetch data from the API", "details": str(e)}
+
         
 
     def get_ons_datasets(self, limit=20, offset=0):
@@ -237,64 +244,20 @@ class RSSFetcher:
             print(f"Error fetching RSS feed: {e}")
             return []
 
-# Example usage
-# if __name__ == "__main__":
-#     fetcher = RSSFetcher()
-
-#     for feed_url in fetcher.RSS_FEEDS:
-#         print(f"Fetching articles from: {feed_url}")
-#         articles = fetcher.fetch_rss_articles(feed_url)
-
-#         if articles:
-#             print("Articles retrieved:")
-#             for article in articles[:5]:  # Limit to 5 articles per feed for display
-#                 print(f"- Title: {article['title']}")
-#                 print(f"  Link: {article['link']}")
-#                 print(f"  Description: {article['description'][:200]}...")
-#                 print(f"  Published: {article['pub_date']}")
-#                 print()
-
-# Example usage
 
 
 # # Example usage
 # if __name__ == "__main__":
-#     api = APIS()
+#     API_KEY = "YOUR_API_KEY"  # Replace with your actual API key
 
-#     # Example: Search for jobs
-#     jobs = api.search_jobs(keywords="Software Engineer", location="London", distance=10, page=1)
-#     if jobs:
-#         print("Jobs found:", jobs)
+#     # Fetch the latest news
+#     latest_news = get_news_api_article(API_KEY, endpoint="latest-news", query_params={"language": "en"})
+#     print(latest_news)
 
-#     # Example: Get job details
-#     job_id = "12345"  # Replace with a valid job ID
-#     job_details = api.get_job_details(job_id)
-#     if job_details:
-#         print("Job details:", job_details)
-
-#     # Example: Get news related to a job
-#     news_articles = api.get_job_related_news(keywords="Software Engineer", limit=10)
-#     if news_articles:
-#         print("News articles related to the job:")
-#         for article in news_articles:
-#             print(f"- {article['title']}: {article['url']}")
-
-#     # Example: Get datasets from ONS API
-#     datasets = api.get_ons_datasets(limit=5)
-#     if datasets:
-#         print("ONS Datasets:")
-#         for dataset in datasets:
-#             print(f"- {dataset['title']} (ID: {dataset['id']})")
-
-#     # Example: Filter a dataset from ONS API
-#     filtered_data = api.filter_ons_dataset(
-#         dataset_id="cpih01",
-#         edition="time-series",
-#         version=6,
-#         dimensions=[{"name": "geography", "options": ["K02000001"]}]
+#     # Fetch historical news based on a search keyword
+#     historical_news = get_news_api_article(
+#         API_KEY,
+#         endpoint="search",
+#         query_params={"keywords": "Amazon", "language": "en", "category": "technology"}
 #     )
-#     if filtered_data:
-#         print("Filtered ONS Dataset:", filtered_data)
-
-api = APIS()
-api.get_guardian_articles_with_content("Software Engineer")
+#     print(historical_news)
