@@ -10,7 +10,7 @@ class BaseAgent:
             base_url = "http://localhost:11434/v1",
             api_key = "ollama",
         )
-    async def run(self,message: list) -> Dict[str, any]:
+    async def run(self):
         raise NotImplementedError("subclasses must implement run method")
     
     def _query_ollama(self, prompt:str) -> str:
@@ -27,7 +27,7 @@ class BaseAgent:
         except Exception as e:
             return str(e)
 
-    def _pare_json_safely(self, text:str) -> Dict[str, any]:
+    def _pare_json_safely(self,text) :
         try:
             start = text.find("{")
             end = text.rfind("}") 
