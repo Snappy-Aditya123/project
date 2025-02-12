@@ -1,7 +1,13 @@
 import streamlit as st
+import chatbotagent
+import evaulationagent  # Fixed typo
 
 # Set Streamlit Page Config
 st.set_page_config(page_title="AI Job Assistant", page_icon="🤖", layout="wide")
+
+# Initialize Agents
+chatbot = chatbotagent.ChatbotAgent()
+evaluator = evaulationagent.EvaluationAgent()
 
 # --- Initialize Session State ---
 if "stage" not in st.session_state:
@@ -10,13 +16,13 @@ if "user_data" not in st.session_state:
     st.session_state.user_data = {}
 if "cv_uploaded" not in st.session_state:
     st.session_state.cv_uploaded = False
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+    st.session_state.uploaded_file = None
 if "current_section" not in st.session_state:
     st.session_state.current_section = "chatbot"  # Default to chatbot
 
 # --- Onboarding Section ---
 if st.session_state.stage == "onboarding":
+    print("Onboarding Section")
     st.title("👋 Welcome to AI Job Assistant")
 
     # Collect user details
@@ -42,6 +48,7 @@ if st.session_state.stage == "onboarding":
 
 # --- CV Upload Section ---
 elif st.session_state.stage == "cv_upload":
+    print("CV Upload Section")
     st.title("📄 Upload Your CV (Optional)")
     st.write("Uploading your CV will help the AI provide better job recommendations.")
 
@@ -51,6 +58,7 @@ elif st.session_state.stage == "cv_upload":
     with col1:
         if uploaded_file:
             st.session_state.cv_uploaded = True
+            st.session_state.uploaded_file = uploaded_file
             st.success("✅ CV Uploaded Successfully!")
 
     with col2:
@@ -82,17 +90,17 @@ elif st.session_state.stage == "main":
             st.title("💬 AI Job Assistant Chatbot")
             st.write("Chat with the AI Assistant to explore job opportunities and career guidance.")
 
-            # Display Chat History
-            for chat in st.session_state.chat_history:
-                with st.chat_message(chat["role"]):
-                    st.write(chat["content"])
-
             # Chat Input
             user_input = st.chat_input("Type your message...")
             if user_input:
-                st.session_state.chat_history.append({"role": "user", "content": user_input})
-                bot_response = "🔹 This is a placeholder response. AI will generate a real response here."
-                st.session_state.chat_history.append({"role": "assistant", "content": bot_response})
+                with st.chat_message("user"):
+                    st.write(user_input)
+
+                # 🔹 Call ChatbotAgent for real AI-generated response
+                bot_response = chatbot.run(user_input)
+
+                with st.chat_message("assistant"):
+                    st.write(bot_response)
 
         elif nav_option == "📊 CV Analysis":
             st.title("📊 CV Analysis")
@@ -102,18 +110,15 @@ elif st.session_state.stage == "main":
             else:
                 st.success("✅ Your CV is being analyzed...")
                 st.subheader("📝 CV Insights")
-                st.write("AI-generated insights will appear here based on your CV.")
+                uploaded_file = st.session_state.uploaded_file
+                # 🔹 Call EvaluationAgent to analyze the uploaded CV
+                if uploaded_file:
+                    with st.spinner("Analyzing your CV..."):
+                        cv_analysis = evaluator.run(uploaded_file)
 
-                # Example Placeholder Insights
-                st.write("- **Strengths:** Python, Deep Learning, Data Analysis")
-                st.write("- **Weaknesses:** Lacks cloud computing skills")
-                st.write("- **Job Suitability Score:** 85% match for Data Scientist roles")
-                
-                st.subheader("📌 Suggested Improvements")
-                st.write("- Consider learning AWS for better cloud integration.")
-                st.write("- Add more projects showcasing real-world ML applications.")
+                    st.write(cv_analysis)  # Display AI-generated analysis
 
-    # --- Right Sidebar: Job Recommendations ---
+# --- Right Sidebar: Job Recommendations ---
     with col3:
         st.markdown("### 🔍 Job Recommendations")
         st.write("Here are some jobs related to your interest:")
