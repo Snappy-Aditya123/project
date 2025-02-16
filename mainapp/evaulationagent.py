@@ -1,10 +1,10 @@
 import baseagent
 import pdfplumber
 import io
-from langchain_community.document_loaders import PyPDFLoader
+import streamlit as st
 
 instructions = """
-You are an advanced AI-powered CV evaluation agent. Your role is to analyze and assess the content of the CV provided. 
+You are an advanced AI-powered CV evaluation agent. Your role is to analyze and assess the content of the CV provided.
 
 ### **Evaluation Criteria**
 1. **Profile Summary** – Extract and summarize key details about the candidate (name, profession, years of experience, industry).
@@ -35,20 +35,27 @@ class EvaluationAgent(baseagent.BaseAgent):
     def __init__(self):
         super().__init__(name=name, instructions=instructions)
 
-    def run(self, doc):
-        print("running")
+    def run(self, uploaded_file):
+        print("Running CV Evaluation...")
+        
         try:
-            # Ensure file is opened in a way that pdfplumber can process
+            # Read the uploaded PDF file as bytes
+            doc = io.BytesIO(uploaded_file.getvalue())
             text = ""
-            loader =  PyPDFLoader(doc)   # Read as BytesIO
-            pages = loader.load_and_split()
-            text = " ".join(list(map(lambda page: page.page_content, pages)))
-
+            
+            # Use pdfplumber to extract text
+            with pdfplumber.open(doc) as pdf:
+                for page in pdf.pages:
+                    extracted_text = page.extract_text()
+                    if extracted_text:
+                        text += extracted_text + "\n"
+            
             if not text.strip():
                 return "⚠️ No readable text found in the PDF. It might be a scanned document."
-
-            ans =  self._query_ollama(text, temperature=0.6, max_tokens=1100)
-            print(ans)
+            
+            # Query AI model for CV evaluation
+            ans = self._query_ollama(text, temperature=0.6, max_tokens=1100)
+            #print(ans)
             return ans
 
         except Exception as e:
