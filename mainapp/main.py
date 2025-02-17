@@ -116,8 +116,8 @@ if st.session_state.stage == "main":
                 streamed_response = st.write_stream(response_generator)
 
         # Store response in session state
-        st.session_state.message_hist.append(AIMessage(streamed_response))
-        st.session_state.chat_history.append({"role": "assistant", "content": streamed_response})
+            st.session_state.message_hist.append(AIMessage(streamed_response))
+            st.session_state.chat_history.append({"role": "assistant", "content": streamed_response})
 
     if nav_option == "CV Analysis Report":
         st.button("Analyze?",on_click=cv_analysis)
