@@ -5,18 +5,17 @@ import DBMS  # Your database module
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
-
+from summarizeragent import summarizer
 class ChatbotAgent:
-    def __init__(self, model="llama3", keep_alive=False, history_limit=10):
+    def __init__(self, model="llama3", keep_alive=False, history_limit=25):
         self.llm = ChatOllama(model=model, temperature=0.7, keep_alive=keep_alive, num_predict=300, num_thread=6)
         self.vector_db = Chroma(persist_directory="chroma_db", embedding_function=OllamaEmbeddings(model="nomic-embed-text"))
         self.db = DBMS.ChatDatabase()
         self.history_limit = history_limit
 
-    def summarize_conversation(self, messages):
-        summary_prompt = f"Summarize the following conversation concisely reatning makor infos like names,ages,numbers and important parts only:\n{messages}"
-        summary = self.llm.invoke([HumanMessage(summary_prompt)]).content  # Using LLM for summarization
-        return summary
+    def summarize_conversation(self, messages,length=5):
+        x = summarizer(messages)
+        return x.run(length)
 
     def trim_chat_history(self, message_history):
         if len(message_history) > self.history_limit:
@@ -31,7 +30,7 @@ class ChatbotAgent:
         if not message_history:
             return
         if analyzed_cv:
-            summarized_cv  = self.trim_chat_history(analyzed_cv)
+            summarized_cv  = self.summarize_conversation(analyzed_cv,length=10)
         # Trim chat history to manage memory efficiently
         message_history = self.trim_chat_history(message_history)
         
@@ -67,3 +66,4 @@ class ChatbotAgent:
         # Collect response and save conversation
         self.db.insert_chat(user_prompt, full_response)
         
+ 
