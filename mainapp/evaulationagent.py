@@ -29,7 +29,7 @@ You are an advanced AI-powered CV evaluation agent. Your role is to analyze and 
 5. **Actionable Improvement Tips**
 """
 
-name = "llama3"
+name = "qwen:4b"
 
 class EvaluationAgent(baseagent.BaseAgent):
     def __init__(self):

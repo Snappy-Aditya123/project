@@ -110,7 +110,7 @@ if st.session_state.stage == "main":
 
             with st.chat_message("assistant"):
                 response_container = st.empty()
-                response_generator = chatbot.chat(st.session_state.message_hist)
+                response_generator = chatbot.chat(st.session_state.message_hist,st.session_state.cv_analysis_result)
 
             # Stream output in real time
                 streamed_response = st.write_stream(response_generator)

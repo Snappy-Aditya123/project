@@ -26,10 +26,12 @@ class ChatbotAgent:
             return [summarized_message] + message_history[-self.history_limit:]
         return message_history
 
-    def chat(self, message_history):
+    def chat(self, message_history,analyzed_cv):
+        summarized_cv = "not given yet"
         if not message_history:
             return
-        
+        if analyzed_cv:
+            summarized_cv  = self.trim_chat_history(analyzed_cv)
         # Trim chat history to manage memory efficiently
         message_history = self.trim_chat_history(message_history)
         
@@ -47,6 +49,8 @@ class ChatbotAgent:
         Context from vector DB (for reference only, do not let it bias responses):
         {formatted_context}
         
+        Summarized cv of the person
+        {summarized_cv}
         You are not allowed to talk about anything apart from job and professional-related topics.
         """)
         
